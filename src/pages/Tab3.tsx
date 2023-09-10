@@ -1,8 +1,19 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import ExploreContainer from '../components/ExploreContainer';
+import { IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import './Tab3.css';
+import { FirebaseAuth } from '../firebase/auth';
 
 const Tab3: React.FC = () => {
+  async function signOut(){
+    await FirebaseAuth.signOut().then(
+      () => {
+        console.log("[INFO]Successfully logged out.")
+        localStorage.clear();
+      }
+    ).catch((e) => {
+      console.log("[ERROR] " + e)
+    })
+  }
+  
   return (
     <IonPage>
       <IonHeader>
@@ -16,7 +27,9 @@ const Tab3: React.FC = () => {
             <IonTitle size="large">Tab 3</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <ExploreContainer name="Tab 3 page" />
+        <IonButton onClick={signOut}>
+          Signout
+        </IonButton>
       </IonContent>
     </IonPage>
   );
