@@ -6,6 +6,7 @@ import {
   IonToolbar,
   IonButton,
   IonPage,
+  IonToast,
 } from '@ionic/react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from '@firebase/auth';
 import { setDoc, doc } from '@firebase/firestore';
@@ -18,26 +19,44 @@ class LoginDetails {
   displayName!: string
 }
 
+enum ResponseCode {
+  Danger = 0,
+  Success = 1,
+  Unknown = 2,
+}
+
 const WelcomePage: React.FC = () => {
   const [loginDetails, setLoginDetails] = useState<LoginDetails>({
     email: "",
     password: "",
     displayName: "",
   })
-  
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [responseCode, setResponseCode] = useState<ResponseCode>(ResponseCode.Unknown);
+
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(FirebaseAuth, loginDetails.email, loginDetails.password).then((response) => {
-        localStorage.setItem('user', JSON.stringify(response.user))
-        console.log("[Info] Successfully logged in.")
+        setShowToast(true)
+        setToastMessage(JSON.stringify(response))
+        setResponseCode(1)
       })
-
     } catch (error) {
-      console.error("[Error]:", error);
+      setShowToast(true)
+      setToastMessage(JSON.stringify(error))
+      setResponseCode(0)
     }
   };
 
   const handleSignup = async () => {
+    if (loginDetails.displayName.trim() === '') {
+      setShowToast(true);
+      setToastMessage('Please enter a display name.');
+      setResponseCode(ResponseCode.Danger);
+      return;
+    }
     try {
       await createUserWithEmailAndPassword(FirebaseAuth, loginDetails.email, loginDetails.password).then(
         async (cred) => {
@@ -46,16 +65,28 @@ const WelcomePage: React.FC = () => {
             email: loginDetails.email,
             profileImage: "",
           };
-
-          await setDoc(doc(FirestoreDatabase, "Users", cred.user.uid), userDocData);
-
-          console.log(`[Info] Successfully created a user with ${loginDetails.email}.`)
+  
+          await setDoc(doc(FirestoreDatabase, "Users", cred.user.uid), userDocData).then((e: any) => {
+            setShowToast(true);
+            setToastMessage(e);
+            setResponseCode(ResponseCode.Success);
+          }).catch((e) => {
+            setShowToast(true);
+            setToastMessage(e);
+            setResponseCode(ResponseCode.Danger);
+            return;
+          });
         }
-      )
-      await handleLogin()
-
-    } catch (error) {
-      console.error("[Error] Registration error:", error);
+      ).catch((e) => {
+        setShowToast(true);
+        setToastMessage(`${e} error has occurred. Please try again.`);
+        setResponseCode(ResponseCode.Danger);
+        return;
+      });
+    } catch {
+      setShowToast(true);
+      setToastMessage("Unknown error has occurred. Please try again.");
+      setResponseCode(ResponseCode.Danger);
     }
   };
 
@@ -66,6 +97,20 @@ const WelcomePage: React.FC = () => {
           <IonTitle>Welcome</IonTitle>
         </IonToolbar>
       </IonHeader>
+      <IonToast
+        isOpen={showToast}
+        message={toastMessage}
+        color={
+          responseCode === ResponseCode.Success
+            ? 'success'
+            : responseCode === ResponseCode.Danger
+            ? 'danger'
+            : 'medium'
+        }
+        duration={3000}
+        onDidDismiss={() => setShowToast(false)}
+        position='top'
+      />
       <IonContent>
         <input
           type="text"
