@@ -1,8 +1,13 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import ExploreContainer from '../components/ExploreContainer';
-import './Tab1.css';
+import './TimerPage.css';
+import { User } from '@firebase/auth';
 
-const Tab1: React.FC = () => {
+interface Props{
+  user: User
+}
+
+const TimerPage: React.FC<Props> = ({user}) => {
   return (
     <IonPage>
       <IonHeader>
@@ -22,4 +27,4 @@ const Tab1: React.FC = () => {
   );
 };
 
-export default Tab1;
+export default TimerPage;
