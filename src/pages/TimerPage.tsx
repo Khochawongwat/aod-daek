@@ -1,12 +1,15 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonContent, IonHeader, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import './TimerPage.css';
 import { User } from '@firebase/auth';
+import { Session } from '../schema/Session';
 
-interface Props{
+interface Props {
   user: User
+  endFastCallback: ()=>void
+  session: Session 
 }
 
-const TimerPage: React.FC<Props> = ({user}) => {
+const TimerPage: React.FC<Props> = ({ user, endFastCallback, session}) => {
   return (
     <IonPage>
       <IonHeader>
@@ -16,10 +19,14 @@ const TimerPage: React.FC<Props> = ({user}) => {
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Tab 1</IonTitle>
-          </IonToolbar>
+          <IonTitle>Timer</IonTitle>
         </IonHeader>
+        <IonHeader>
+          {""}
+        </IonHeader>
+        <IonButton onClick={endFastCallback}>
+          END FAST
+        </IonButton>
       </IonContent>
     </IonPage>
   );
